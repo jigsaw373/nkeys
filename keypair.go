@@ -28,7 +28,7 @@ type kp struct {
 
 // CreatePair will create a KeyPair based on the rand entropy and a type/prefix byte. rand can be nil.
 func CreatePair(prefix PrefixByte) (KeyPair, error) {
-	var rawSeed [32]byte
+	var rawSeed [256]byte
 
 	_, err := io.ReadFull(rand.Reader, rawSeed[:])
 	if err != nil {
