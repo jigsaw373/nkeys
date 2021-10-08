@@ -17,8 +17,10 @@ import (
 	"bytes"
 	"crypto/ecdsa"
 	"crypto/elliptic"
+	"crypto/md5"
 	"crypto/rand"
 	"io"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/crypto/secp256k1"
 	"golang.org/x/crypto/ed25519"
@@ -111,7 +113,19 @@ func (pair *kp) Sign(input []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return ed25519.Sign(priv, input), nil
+	h := md5.New()
+	r := big.NewInt(0)
+	s := big.NewInt(0)
+	io.WriteString(h, string(input))
+	signhash := h.Sum(nil)
+	r, s, serr := ecdsa.Sign(rand.Reader, &priv, signhash)
+	if serr != nil {
+		return nil, err
+	}
+	signature := r.Bytes()
+	signature = append(signature, s.Bytes()...)
+
+	return signature, nil
 }
 
 // Verify will verify the input against a signature utilizing the public key.
