@@ -23,7 +23,6 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/crypto/secp256k1"
-	"golang.org/x/crypto/ed25519"
 )
 
 // kp is the internal struct for a kepypair using seed.
@@ -134,7 +133,16 @@ func (pair *kp) Verify(input []byte, sig []byte) error {
 	if err != nil {
 		return err
 	}
-	if !ed25519.Verify(pub, input, sig) {
+	h := md5.New()
+	io.WriteString(h, string(input))
+	signhash := h.Sum(nil)
+
+	r := big.NewInt(0)
+	r.SetBytes(sig[:32])
+	s := big.NewInt(0)
+	s.SetBytes(sig[32:])
+
+	if !ecdsa.Verify(&pub, signhash, r, s) {
 		return ErrInvalidSignature
 	}
 	return nil
