@@ -15,9 +15,11 @@ package nkeys
 
 import (
 	"bytes"
+	"crypto/ecdsa"
 	"crypto/rand"
 	"io"
 
+	"github.com/ethereum/go-ethereum/crypto/secp256k1"
 	"golang.org/x/crypto/ed25519"
 )
 
@@ -48,13 +50,17 @@ func (pair *kp) rawSeed() ([]byte, error) {
 	return raw, err
 }
 
-// keys will return a 32 byte public key and a 64 byte private key utilizing the seed.
-func (pair *kp) keys() (ed25519.PublicKey, ed25519.PrivateKey, error) {
+func (pair *kp) keys() (ecdsa.PublicKey, ecdsa.PrivateKey, error) {
 	raw, err := pair.rawSeed()
 	if err != nil {
-		return nil, nil, err
+		return ecdsa.PublicKey{}, ecdsa.PrivateKey{}, err
 	}
-	return ed25519.GenerateKey(bytes.NewReader(raw))
+	keyCurve := secp256k1.S256()
+	privatekey, err := ecdsa.GenerateKey(keyCurve, bytes.NewReader(raw))
+	if err != nil {
+		return ecdsa.PublicKey{}, ecdsa.PrivateKey{}, err
+	}
+	return privatekey.PublicKey, *privatekey, nil
 }
 
 // Wipe will randomize the contents of the seed key
