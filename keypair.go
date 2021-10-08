@@ -16,6 +16,7 @@ package nkeys
 import (
 	"bytes"
 	"crypto/ecdsa"
+	"crypto/elliptic"
 	"crypto/rand"
 	"io"
 
@@ -81,11 +82,14 @@ func (pair *kp) PublicKey() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	pub, _, err := ed25519.GenerateKey(bytes.NewReader(raw))
+	keyCurve := secp256k1.S256()
+	priv, err := ecdsa.GenerateKey(keyCurve, bytes.NewReader(raw))
+	pub := priv.PublicKey
 	if err != nil {
 		return "", err
 	}
-	pk, err := Encode(public, pub)
+	mPub := elliptic.Marshal(keyCurve, pub.X, pub.Y)
+	pk, err := Encode(public, mPub)
 	if err != nil {
 		return "", err
 	}
