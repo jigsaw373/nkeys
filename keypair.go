@@ -102,7 +102,7 @@ func (pair *kp) PrivateKey() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return Encode(PrefixBytePrivate, priv)
+	return Encode(PrefixBytePrivate, priv.D.Bytes())
 }
 
 // Sign will sign the input with KeyPair's private key.
