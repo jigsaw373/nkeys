@@ -14,16 +14,22 @@
 package nkeys
 
 import (
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/md5"
 	"crypto/rand"
 	"io"
+	"math/big"
 
-	"golang.org/x/crypto/ed25519"
+	"github.com/ethereum/go-ethereum/crypto/secp256k1"
 )
+
+type PublicKey []byte
 
 // A KeyPair from a public key capable of verifying only.
 type pub struct {
 	pre PrefixByte
-	pub ed25519.PublicKey
+	pub PublicKey
 }
 
 // PublicKey will return the encoded public key associated with the KeyPair.
@@ -53,7 +59,18 @@ func (p *pub) Sign(input []byte) ([]byte, error) {
 
 // Verify will verify the input against a signature utilizing the public key.
 func (p *pub) Verify(input []byte, sig []byte) error {
-	if !ed25519.Verify(p.pub, input, sig) {
+	x, y := elliptic.Unmarshal(secp256k1.S256(), p.pub)
+	publicKey := ecdsa.PublicKey{secp256k1.S256(), x, y}
+	h := md5.New()
+	io.WriteString(h, string(input))
+	signhash := h.Sum(nil)
+
+	r := big.NewInt(0)
+	r.SetBytes(sig[:32])
+	s := big.NewInt(0)
+	s.SetBytes(sig[32:])
+
+	if !ecdsa.Verify(&publicKey, signhash, r, s) {
 		return ErrInvalidSignature
 	}
 	return nil
