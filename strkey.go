@@ -157,16 +157,15 @@ func Decode(expectedPrefix PrefixByte, src []byte) ([]byte, error) {
 	return raw[1:], nil
 }
 
-// DecodeSeed will decode the base32 string and check crc16 and enforce the prefix is a seed
+// DecodeSeed will decode the hex string and check crc16 and enforce the prefix is a seed
 // and the subsequent type is a valid type.
 func DecodeSeed(src []byte) (PrefixByte, []byte, error) {
 	raw, err := decode(src)
 	if err != nil {
 		return PrefixByteSeed, nil, err
 	}
-	// Need to do the reverse here to get back to internal representation.
-	b1 := raw[0] & 248                          // 248 = 11111000
-	b2 := (raw[0]&7)<<5 | ((raw[1] & 248) >> 3) // 7 = 00000111
+	b1 := raw[0]
+	b2 := raw[1]
 
 	if PrefixByte(b1) != PrefixByteSeed {
 		return PrefixByteSeed, nil, ErrInvalidSeed
