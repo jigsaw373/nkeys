@@ -15,38 +15,31 @@ package nkeys
 
 import (
 	"bytes"
+	"crypto/ed25519"
 	"encoding/base32"
 	"encoding/binary"
-	"golang.org/x/crypto/ed25519"
+	"encoding/hex"
 )
 
 // PrefixByte is a lead byte representing the type.
 type PrefixByte byte
 
 const (
-	// PrefixByteSeed is the version byte used for encoded NATS Seeds
-	PrefixByteSeed PrefixByte = 18 << 3 // Base32-encodes to 'S...'
+	PrefixByteSeed PrefixByte = 'S'
 
-	// PrefixBytePrivate is the version byte used for encoded NATS Private keys
-	PrefixBytePrivate PrefixByte = 15 << 3 // Base32-encodes to 'P...'
+	PrefixBytePrivate PrefixByte = 'P'
 
-	// PrefixByteServer is the version byte used for encoded NATS Servers
-	PrefixByteServer PrefixByte = 13 << 3 // Base32-encodes to 'N...'
+	PrefixByteServer PrefixByte = 'N'
 
-	// PrefixByteCluster is the version byte used for encoded NATS Clusters
-	PrefixByteCluster PrefixByte = 2 << 3 // Base32-encodes to 'C...'
+	PrefixByteCluster PrefixByte = 'C'
 
-	// PrefixByteOperator is the version byte used for encoded NATS Operators
-	PrefixByteOperator PrefixByte = 14 << 3 // Base32-encodes to 'O...'
+	PrefixByteOperator PrefixByte = 'O'
 
-	// PrefixByteAccount is the version byte used for encoded NATS Accounts
-	PrefixByteAccount PrefixByte = 0 // Base32-encodes to 'A...'
+	PrefixByteAccount PrefixByte = 'A'
 
-	// PrefixByteUser is the version byte used for encoded NATS Users
-	PrefixByteUser PrefixByte = 20 << 3 // Base32-encodes to 'U...'
+	PrefixByteUser PrefixByte = 'U'
 
-	// PrefixByteUnknown is for unknown prefixes.
-	PrefixByteUnknown PrefixByte = 23 << 3 // Base32-encodes to 'X...'
+	PrefixByteUnknown PrefixByte = 'X'
 )
 
 // Set our encoding to not include padding '=='
@@ -77,8 +70,9 @@ func Encode(prefix PrefixByte, src []byte) ([]byte, error) {
 	}
 
 	data := raw.Bytes()
-	buf := make([]byte, b32Enc.EncodedLen(len(data)))
-	b32Enc.Encode(buf, data)
+	// change to hex
+	buf := make([]byte, hex.EncodedLen(len(data)))
+	hex.Encode(buf, data)
 	return buf[:], nil
 }
 
