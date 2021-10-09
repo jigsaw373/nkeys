@@ -68,7 +68,7 @@ func ParseDecoratedUserNKey(contents []byte) (KeyPair, error) {
 	if err != nil {
 		return nil, err
 	}
-	if !bytes.HasPrefix(seed, []byte("SU")) {
+	if !bytes.HasPrefix(seed, []byte(hex.EncodeToString([]byte("SU")))) {
 		return nil, errors.New("doesn't contain an user seed nkey")
 	}
 	kp, err := FromSeed(seed)
