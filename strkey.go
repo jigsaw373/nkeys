@@ -77,7 +77,6 @@ func Encode(prefix PrefixByte, src []byte) ([]byte, error) {
 	return buf[:], nil
 }
 
-// EncodeSeed will encode a raw key with the prefix and then seed prefix and crc16 and then base32 encoded.
 func EncodeSeed(public PrefixByte, src []byte) ([]byte, error) {
 
 	if err := checkValidPublicPrefixByte(public); err != nil {
@@ -116,10 +115,10 @@ func IsValidEncoding(src []byte) bool {
 	return err == nil
 }
 
-// decode will decode the base32 and check crc16 and the prefix for validity.
+// decode will decode the hex and check crc16 and the prefix for validity.
 func decode(src []byte) ([]byte, error) {
-	raw := make([]byte, b32Enc.DecodedLen(len(src)))
-	n, err := b32Enc.Decode(raw, src)
+	raw := make([]byte, hex.DecodedLen(len(src)))
+	n, err := hex.Decode(raw, src)
 	if err != nil {
 		return nil, err
 	}
