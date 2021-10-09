@@ -2,6 +2,7 @@ package nkeys
 
 import (
 	"bytes"
+	"encoding/hex"
 	"errors"
 	"regexp"
 )
@@ -33,9 +34,9 @@ func ParseDecoratedNKey(contents []byte) (KeyPair, error) {
 	} else {
 		lines := bytes.Split(contents, []byte("\n"))
 		for _, line := range lines {
-			if bytes.HasPrefix(bytes.TrimSpace(line), []byte("SO")) ||
-				bytes.HasPrefix(bytes.TrimSpace(line), []byte("SA")) ||
-				bytes.HasPrefix(bytes.TrimSpace(line), []byte("SU")) {
+			if bytes.HasPrefix(bytes.TrimSpace(line), []byte(hex.EncodeToString([]byte("SO")))) ||
+				bytes.HasPrefix(bytes.TrimSpace(line), []byte(hex.EncodeToString([]byte("SA")))) ||
+				bytes.HasPrefix(bytes.TrimSpace(line), []byte(hex.EncodeToString([]byte("SU")))) {
 				seed = line
 				break
 			}
