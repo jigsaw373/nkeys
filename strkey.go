@@ -15,7 +15,6 @@ package nkeys
 
 import (
 	"bytes"
-	"crypto/ed25519"
 	"encoding/base32"
 	"encoding/binary"
 	"encoding/hex"
@@ -40,6 +39,8 @@ const (
 	PrefixByteUser PrefixByte = 'U'
 
 	PrefixByteUnknown PrefixByte = 'X'
+
+	SeedLength = 256
 )
 
 // Set our encoding to not include padding '=='
@@ -78,23 +79,19 @@ func Encode(prefix PrefixByte, src []byte) ([]byte, error) {
 
 // EncodeSeed will encode a raw key with the prefix and then seed prefix and crc16 and then base32 encoded.
 func EncodeSeed(public PrefixByte, src []byte) ([]byte, error) {
+
 	if err := checkValidPublicPrefixByte(public); err != nil {
 		return nil, err
 	}
 
-	if len(src) != ed25519.SeedSize {
+	if len(src) != SeedLength {
 		return nil, ErrInvalidSeedLen
 	}
 
-	// In order to make this human printable for both bytes, we need to do a little
-	// bit manipulation to setup for base32 encoding which takes 5 bits at a time.
-	b1 := byte(PrefixByteSeed) | (byte(public) >> 5)
-	b2 := (byte(public) & 31) << 3 // 31 = 00011111
-
 	var raw bytes.Buffer
 
-	raw.WriteByte(b1)
-	raw.WriteByte(b2)
+	raw.WriteByte(byte(PrefixByteSeed))
+	raw.WriteByte(byte(public))
 
 	// write payload
 	if _, err := raw.Write(src); err != nil {
@@ -108,8 +105,8 @@ func EncodeSeed(public PrefixByte, src []byte) ([]byte, error) {
 	}
 
 	data := raw.Bytes()
-	buf := make([]byte, b32Enc.EncodedLen(len(data)))
-	b32Enc.Encode(buf, data)
+	buf := make([]byte, hex.EncodedLen(len(data)))
+	hex.Encode(buf, data)
 	return buf, nil
 }
 
