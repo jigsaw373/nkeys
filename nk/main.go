@@ -16,8 +16,8 @@ package main
 import (
 	"bytes"
 	"crypto/rand"
-	"encoding/base32"
 	"encoding/base64"
+	"encoding/hex"
 	"flag"
 	"fmt"
 	"io"
@@ -233,14 +233,12 @@ func genKeyPair(pre nkeys.PrefixByte, entropy string) nkeys.KeyPair {
 	return kp
 }
 
-var b32Enc = base32.StdEncoding.WithPadding(base32.NoPadding)
-
 func createVanityKey(keyType, vanity, entropy string, max int) nkeys.KeyPair {
 	spinners := []rune(`⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏`)
 	pre := preForType(keyType)
 	vanity = strings.ToUpper(vanity)
 	// Check to make sure we can base32 into it by trying to decode it.
-	_, err := b32Enc.DecodeString(vanity)
+	_, err := hex.DecodeString(vanity)
 	if err != nil {
 		log.Fatalf("Can not generate base32 encoded strings to match '%s'", vanity)
 	}
