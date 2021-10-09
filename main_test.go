@@ -17,12 +17,11 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/hex"
 	"io"
 	"os"
 	"regexp"
 	"testing"
-
-	"golang.org/x/crypto/ed25519"
 )
 
 func TestVersion(t *testing.T) {
@@ -107,7 +106,7 @@ func TestSeed(t *testing.T) {
 		t.Fatalf("Did not receive ErrInvalidPrefixByte error, received %v", err)
 	}
 
-	var rawSeed [ed25519.SeedSize]byte
+	var rawSeed [SeedLength]byte
 
 	_, err = io.ReadFull(rand.Reader, rawSeed[:])
 	if err != nil {
@@ -154,7 +153,7 @@ func TestAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Received an error retrieving public key: %v", err)
 	}
-	if public[0] != 'A' {
+	if public[0:2] != hex.EncodeToString([]byte("A")) {
 		t.Fatalf("Expected a prefix of 'A' but got %c", public[0])
 	}
 	if !IsValidPublicAccountKey(public) {
@@ -166,7 +165,7 @@ func TestAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Received an error retrieving private key: %v", err)
 	}
-	if private[0] != 'P' {
+	if string(private[0:2]) != hex.EncodeToString([]byte("P")) {
 		t.Fatalf("Expected a prefix of 'P' but got %v", private[0])
 	}
 
@@ -176,9 +175,9 @@ func TestAccount(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unexpected error signing from account: %v", err)
 	}
-	if len(sig) != ed25519.SignatureSize {
+	if len(sig) != 64 {
 		t.Fatalf("Expected signature size of %d but got %d",
-			ed25519.SignatureSize, len(sig))
+			64, len(sig))
 	}
 	err = account.Verify(data, sig)
 	if err != nil {
@@ -200,7 +199,7 @@ func TestUser(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Received an error retrieving public key: %v", err)
 	}
-	if public[0] != 'U' {
+	if public[0:2] != hex.EncodeToString([]byte("U")) {
 		t.Fatalf("Expected a prefix of 'U' but got %c", public[0])
 	}
 	if !IsValidPublicUserKey(public) {
@@ -222,7 +221,7 @@ func TestOperator(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Received an error retrieving public key: %v", err)
 	}
-	if public[0] != 'O' {
+	if public[0:2] != hex.EncodeToString([]byte("O")) {
 		t.Fatalf("Expected a prefix of 'O' but got %c", public[0])
 	}
 	if !IsValidPublicOperatorKey(public) {
@@ -244,7 +243,7 @@ func TestCluster(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Received an error retrieving public key: %v", err)
 	}
-	if public[0] != 'C' {
+	if public[0:2] != hex.EncodeToString([]byte("C")) {
 		t.Fatalf("Expected a prefix of 'C' but got %c", public[0])
 	}
 	if !IsValidPublicClusterKey(public) {
@@ -266,7 +265,7 @@ func TestServer(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Received an error retrieving public key: %v", err)
 	}
-	if public[0] != 'N' {
+	if public[0:2] != hex.EncodeToString([]byte("N")) {
 		t.Fatalf("Expected a prefix of 'N' but got %c", public[0])
 	}
 	if !IsValidPublicServerKey(public) {
@@ -403,7 +402,7 @@ func TestFromSeed(t *testing.T) {
 		t.Fatalf("Unexpected error retrieving seed: %v", err)
 	}
 	// Make sure the seed starts with SA
-	if !bytes.HasPrefix(seed, []byte("SA")) {
+	if !bytes.HasPrefix(seed, []byte(hex.EncodeToString([]byte("SA")))) {
 		t.Fatalf("Expected seed to start with 'SA', go '%s'", seed[:2])
 	}
 
