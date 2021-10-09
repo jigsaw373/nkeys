@@ -6,17 +6,19 @@
 [![GoDoc](http://godoc.org/github.com/nats-io/nkeys?status.svg)](http://godoc.org/github.com/nats-io/nkeys)
 [![Coverage Status](https://coveralls.io/repos/github/nats-io/nkeys/badge.svg?branch=master&service=github)](https://coveralls.io/github/nats-io/nkeys?branch=master)
 
-A public-key signature system based on [Ed25519](https://ed25519.cr.yp.to/) for the NATS ecosystem.
+A public-key signature system based on [Secp256k1](https://en.bitcoin.it/wiki/Secp256k1)for the NATS ecosystem.
 
 ## About
 
-The NATS ecosystem will be moving to [Ed25519](https://ed25519.cr.yp.to/) keys for identity, authentication and authorization for entities such as Accounts, Users, Servers and Clusters.
+The NATS ecosystem is now using [Secp256k1](https://en.bitcoin.it/wiki/Secp256k1) to generate keys and perform authentication and authorization for entities such as Accounts, Users, Servers and Clusters.
 
-Ed25519 is fast and resistant to side channel attacks. Generation of a seed key is all that is needed to be stored and kept safe, as the seed can generate both the public and private keys.
+the formulation that was used in the original NKEYS still remains. but keys are now encoded by hex encoding and the length of encoded strings are now different. off course the method of calculating the prefix bytes of keys is now different. 
 
-The NATS system will utilize Ed25519 keys, meaning that NATS systems will never store or even have access to any private keys. Authentication will utilize a random challenge response mechanism.
+by migrating from Ed25519 to Secp256k1, all of the traditional functions are still remain with their old arguments and return values so that as a user point of view, no change has to be done in client code.
 
-Dealing with 32 byte and 64 byte raw keys can be challenging. NKEYS is designed to formulate keys in a much friendlier fashion and references work done in cryptocurrencies, specifically [Stellar](https://www.stellar.org/).	Bitcoin and others used a form of Base58 (or Base58Check) to encode raw keys. Stellar utilized a more traditional Base32 with a CRC16 and a version or prefix byte. NKEYS utilizes a similar format where the prefix will be 1 byte for public and private keys and will be 2 bytes for seeds. The base32 encoding of these prefixes will yield friendly human readable prefixes, e.g. '**N**' = server, '**C**' = cluster, '**O**' = operator, '**A**' = account, and '**U**' = user. '**P**' is used for private keys. For seeds, the first encoded prefix is '**S**', and the second character will be the type for the public key, e.g. "**SU**" is a seed for a user key pair, "**SA**" is a seed for an account key pair.
+the main libraries added in this migration, are : "crypto/ecdsa" and "crypto/elliptic", also the [crypto/secp256k1](github.com/ethereum/go-ethereum/crypto/secp256k1) is used to reterieve the curv variable for ECDSA.
+
+
 
 ## Installation
 
@@ -42,11 +44,11 @@ sig, _ := user.Sign(data)
 err = user.Verify(data, sig)
 
 // Access the seed, the only thing that needs to be stored and kept safe.
-// seed = "SUAKYRHVIOREXV7EUZTBHUHL7NUMHPMAS7QMDU3GTIUWEI5LDNOXD43IZY"
+// seed = "5355f2c11f75e1e582c12e0077c77a80c51a7daed05dde32c181248d564696e94b859b744f17e68f5d7cf268d60abbc2788ab98fccf135c2e1bc4f37b99918b0d8b92e29f76d1db84e51155526500dc323d75165a5332602660b3149293a5fd3a841daea77d152a0eed37c46c58cd15cca14b08011734a49a50b4589daeb37f9d50c711d72ba830cba228bec6a662ff585db2efec55f738196999e3d5f46a10bd0949c09e4d6c115b77c37fe7f209f3e9c3315fbfce30497b7d3ecdc04581c6be3423a68fce0433b79bbfc46fbe0c7c0f2c15a758ad38288e43e9ee7731fbeb62e4c1305bf389d880cbed997a64c51d7fb5d1fbb557ece91f9195e5c5fd6e21d34489cde"
 seed, _ := user.Seed()
 
 // Access the public key which can be shared.
-// publicKey = "UD466L6EBCM3YY5HEGHJANNTN4LSKTSUXTH7RILHCKEQMQHTBNLHJJXT"
+// publicKey = "55d38288e43e9e55f2c11f75e1e582c12e0077c77a80c51a7d..."
 publicKey, _ := user.PublicKey()
 
 // Create a full User who can sign and verify from a private seed.
