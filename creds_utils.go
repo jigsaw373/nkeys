@@ -2,6 +2,7 @@ package nkeys
 
 import (
 	"bytes"
+	"encoding/hex"
 	"errors"
 	"regexp"
 )
@@ -33,9 +34,9 @@ func ParseDecoratedNKey(contents []byte) (KeyPair, error) {
 	} else {
 		lines := bytes.Split(contents, []byte("\n"))
 		for _, line := range lines {
-			if bytes.HasPrefix(bytes.TrimSpace(line), []byte("SO")) ||
-				bytes.HasPrefix(bytes.TrimSpace(line), []byte("SA")) ||
-				bytes.HasPrefix(bytes.TrimSpace(line), []byte("SU")) {
+			if bytes.HasPrefix(bytes.TrimSpace(line), []byte(hex.EncodeToString([]byte("SO")))) ||
+				bytes.HasPrefix(bytes.TrimSpace(line), []byte(hex.EncodeToString([]byte("SA")))) ||
+				bytes.HasPrefix(bytes.TrimSpace(line), []byte(hex.EncodeToString([]byte("SU")))) {
 				seed = line
 				break
 			}
@@ -44,9 +45,9 @@ func ParseDecoratedNKey(contents []byte) (KeyPair, error) {
 	if seed == nil {
 		return nil, errors.New("no nkey seed found")
 	}
-	if !bytes.HasPrefix(seed, []byte("SO")) &&
-		!bytes.HasPrefix(seed, []byte("SA")) &&
-		!bytes.HasPrefix(seed, []byte("SU")) {
+	if !bytes.HasPrefix(seed, []byte(hex.EncodeToString([]byte("SO")))) &&
+		!bytes.HasPrefix(seed, []byte(hex.EncodeToString([]byte("SA")))) &&
+		!bytes.HasPrefix(seed, []byte(hex.EncodeToString([]byte("SU")))) {
 		return nil, errors.New("doesn't contain a seed nkey")
 	}
 	kp, err := FromSeed(seed)
